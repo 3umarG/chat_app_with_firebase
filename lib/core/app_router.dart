@@ -1,4 +1,5 @@
 import 'package:chat_app/business/auth/auth_cubit.dart';
+import 'package:chat_app/business/chats/chats_cubit.dart';
 import 'package:chat_app/presentation/screens/auth/login_screen.dart';
 import 'package:chat_app/presentation/screens/home_screen.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,10 @@ class AppRouter {
     switch (settings.name) {
       case AppRoutes.homeScreenRoute:
         return MaterialPageRoute(
-          builder: (_) => const HomeScreen(),
+          builder: (_) => BlocProvider(
+            create: (_) => ChatsCubit(),
+            child: const HomeScreen(),
+          ),
         );
       case AppRoutes.splashScreenRoute:
         return MaterialPageRoute(
