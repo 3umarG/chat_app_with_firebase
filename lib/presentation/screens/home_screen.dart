@@ -1,4 +1,6 @@
+
 import 'package:chat_app/business/chats/chats_cubit.dart';
+import 'package:chat_app/data/models/chat_user.dart';
 import 'package:chat_app/presentation/widgets/chat_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -58,19 +60,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: CircularProgressIndicator(),
                   );
                 } else if (snapshot.hasData) {
-                  final listOfUsers = snapshot.data!.docs.map((e) => e.data());
-                  debugPrint(listOfUsers.toString());
+                  final List<ChatUser> listOfUsers = List<ChatUser>.from(
+                      snapshot.data!.docs
+                          .map((e) => ChatUser.fromJson(e.data())));
+                  debugPrint(listOfUsers[0].name.toString());
                   return ListView.builder(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     itemBuilder: (context, index) => const ChatCard(),
                     itemCount: listOfUsers.length,
                     physics: const BouncingScrollPhysics(),
                   );
-                } else if(snapshot.hasError) {
+                } else if (snapshot.hasError) {
                   return Center(
                     child: Text(snapshot.error!.toString()),
                   );
-                }else{
+                } else {
                   return const SizedBox.shrink();
                 }
               });

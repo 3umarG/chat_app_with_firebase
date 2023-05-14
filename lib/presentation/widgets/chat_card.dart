@@ -9,7 +9,6 @@ class ChatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 2,
-      color: Colors.blueAccent.shade100,
       margin: EdgeInsets.symmetric(horizontal: mediaQuery(context).width * .01 , vertical: 4),
       child:  ListTile(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
