@@ -19,3 +19,8 @@ class AuthGoogleSignInSuccessState extends AuthState {
 
   AuthGoogleSignInSuccessState(this.user);
 }
+
+
+class AuthSignOutLoadingState extends AuthState{}
+class AuthSignOutErrorState extends AuthState{}
+class AuthSignOutSuccessState extends AuthState{}
