@@ -32,4 +32,16 @@ class ChatUser {
         email: json['email'],
         pushToken: json['pushToken'],
       );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'image': image,
+        'about': about,
+        'createdAt': createdAt,
+        'isOnline': isOnline,
+        'lastActive': lastActive,
+        'email': email,
+        'pushToken': pushToken
+      };
 }
