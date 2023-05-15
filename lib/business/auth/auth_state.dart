@@ -24,3 +24,9 @@ class AuthGoogleSignInSuccessState extends AuthState {
 class AuthSignOutLoadingState extends AuthState{}
 class AuthSignOutErrorState extends AuthState{}
 class AuthSignOutSuccessState extends AuthState{}
+
+
+abstract class AuthProfileInfoState extends AuthState{}
+class AuthProfileInfoLoadingState extends AuthProfileInfoState{}
+class AuthProfileInfoSuccessState extends AuthProfileInfoState{}
+class AuthProfileInfoErrorState extends AuthProfileInfoState{}

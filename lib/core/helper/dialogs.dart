@@ -29,4 +29,14 @@ class Dialogs {
       },
     );
   }
+
+  static void showErrorSnackBar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 3),
+        content: Text("An Error Occured !!"),
+      ),
+    );
+  }
 }

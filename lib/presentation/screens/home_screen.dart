@@ -36,14 +36,12 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
           IconButton(
-            onPressed: (){
-              Navigator.pushReplacementNamed(
-                context,
-                AppRoutes.loginScreenRoute,
-              );
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.profileScreenRoute);
             },
             icon: const Icon(Icons.person),
           ),
+
         ],
       ),
       floatingActionButton: Padding(

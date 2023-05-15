@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:chat_app/data/api/api_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -14,22 +15,43 @@ part 'auth_state.dart';
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthInitial());
 
-  final FirebaseAuth auth = FirebaseAuth.instance;
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  late User user ;
+  late User user;
 
-Future<void> signOut() async {
-  try{
-  emit(AuthSignOutLoadingState());
-  await auth.signOut();
-  await GoogleSignIn().signOut();
-  emit(AuthSignOutSuccessState());
-  }catch(e){
-    debugPrint(e.toString());
-    emit(AuthSignOutErrorState());
+  ChatUser? currentUser;
+
+  Future<void> getTheCurrentUser() async {
+    try {
+      emit(AuthProfileInfoLoadingState());
+      DocumentSnapshot<Map<String, dynamic>> snapshot = await ApiServices
+          .firebaseStore
+          .collection("users")
+          .doc(ApiServices.user.uid)
+          .get();
+
+      if (snapshot.exists) {
+        Map<String, dynamic> userData = snapshot.data()!;
+        ChatUser currentUser = ChatUser.fromJson(userData);
+        this.currentUser = currentUser;
+        emit(AuthProfileInfoSuccessState());
+      } else {
+        emit(AuthProfileInfoErrorState());
+      }
+    } catch (e) {
+      emit(AuthProfileInfoErrorState());
+    }
   }
-}
 
+  Future<void> signOut() async {
+    try {
+      emit(AuthSignOutLoadingState());
+      await ApiServices.firebaseAuth.signOut();
+      await GoogleSignIn().signOut();
+      emit(AuthSignOutSuccessState());
+    } catch (e) {
+      debugPrint(e.toString());
+      emit(AuthSignOutErrorState());
+    }
+  }
 
   Future<void> handleGoogleSignIn() async {
     try {
@@ -40,9 +62,9 @@ Future<void> signOut() async {
       debugPrint("Success");
       await _createUserToFireStore();
       emit(AuthGoogleSignInSuccessState(user));
-    }on SocketException {
+    } on SocketException {
       emit(AuthGoogleSignInNoInternetState());
-    }on FirebaseException catch(e){
+    } on FirebaseException catch (e) {
       emit(AuthGoogleSignInFirebaseErrorState(e.code));
     }
   }
@@ -65,9 +87,12 @@ Future<void> signOut() async {
     return await FirebaseAuth.instance.signInWithCredential(credential);
   }
 
-
   Future<bool> _isUserExistsOnFireStore() async {
-    return (await firestore.collection('users').doc(user.uid).get()).exists;
+    return (await ApiServices.firebaseStore
+            .collection('users')
+            .doc(user.uid)
+            .get())
+        .exists;
   }
 
   Future<void> _createUserToFireStore() async {
@@ -83,8 +108,12 @@ Future<void> signOut() async {
         email: user.email,
         pushToken: '',
       );
-      firestore.collection("users").doc(user.uid).set(newUser.toJson());
-      debugPrint("User : ${newUser.email} add Successfully to the FireStore !!!");
+      ApiServices.firebaseStore
+          .collection("users")
+          .doc(user.uid)
+          .set(newUser.toJson());
+      debugPrint(
+          "User : ${newUser.email} add Successfully to the FireStore !!!");
     }
   }
 }
