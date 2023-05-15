@@ -27,6 +27,11 @@ class AuthSignOutSuccessState extends AuthState{}
 
 
 abstract class AuthProfileInfoState extends AuthState{}
+
 class AuthProfileInfoLoadingState extends AuthProfileInfoState{}
 class AuthProfileInfoSuccessState extends AuthProfileInfoState{}
 class AuthProfileInfoErrorState extends AuthProfileInfoState{}
+
+class AuthProfileUpdateInfoLoadingState extends AuthProfileInfoState{}
+class AuthProfileUpdateInfoSuccessState extends AuthProfileInfoState{}
+class AuthProfileUpdateInfoErrorState extends AuthProfileInfoState{}

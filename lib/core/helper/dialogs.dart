@@ -39,4 +39,14 @@ class Dialogs {
       ),
     );
   }
+  static void showSuccessSnackBar(BuildContext context , String mess) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+        content: Text(mess),
+      ),
+    );
+  }
 }

@@ -116,4 +116,19 @@ class AuthCubit extends Cubit<AuthState> {
           "User : ${newUser.email} add Successfully to the FireStore !!!");
     }
   }
+
+  Future<void> updateUserInfo(String name, String about) async {
+    try {
+      emit(AuthProfileUpdateInfoLoadingState());
+      ApiServices.firebaseStore.collection("users").doc(currentUser!.id).update(
+        {
+          'name': name,
+          'about': about,
+        },
+      );
+      emit(AuthProfileUpdateInfoSuccessState());
+    } catch (e) {
+      emit(AuthProfileUpdateInfoErrorState());
+    }
+  }
 }
