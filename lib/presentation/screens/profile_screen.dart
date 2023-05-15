@@ -60,22 +60,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       SizedBox(
                         height: mediaQuery(context).height * 0.06,
                       ),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                            mediaQuery(context).height * 0.1),
-                        child: CachedNetworkImage(
-                          fit: BoxFit.fill,
-                          width: mediaQuery(context).height * 0.2,
-                          height: mediaQuery(context).height * 0.2,
-                          imageUrl: ApiServices.user.photoURL!,
-                          placeholder: (_, s) => const CircleAvatar(
-                            child: Icon(CupertinoIcons.person_2_alt),
+                      Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                                mediaQuery(context).height * 0.1),
+                            child: CachedNetworkImage(
+                              fit: BoxFit.fill,
+                              width: mediaQuery(context).height * 0.2,
+                              height: mediaQuery(context).height * 0.2,
+                              imageUrl: ApiServices.user.photoURL!,
+                              placeholder: (_, s) => const CircleAvatar(
+                                child: Icon(CupertinoIcons.person_2_alt),
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  const CircleAvatar(
+                                child: Icon(CupertinoIcons.person_2_alt),
+                              ),
+                            ),
                           ),
-                          errorWidget: (context, url, error) =>
-                              const CircleAvatar(
-                            child: Icon(CupertinoIcons.person_2_alt),
-                          ),
-                        ),
+                          Positioned(
+                            bottom: -1,
+                            right: -20,
+                            child: MaterialButton(
+                              color: Colors.white,
+                              shape: const CircleBorder(),
+                              elevation: 2,
+                              onPressed: () {},
+                              child: const Icon(
+                                Icons.camera_alt_outlined,
+                                color: Colors.blueAccent,
+                              ),
+                            ),
+                          )
+                        ],
                       ),
                       SizedBox(
                         height: mediaQuery(context).height * 0.02,
@@ -148,30 +167,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       floatingActionButton: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
-          if(state is AuthSignOutLoadingState){
+          if (state is AuthSignOutLoadingState) {
             Dialogs.showLoadingDialog(context);
-          }else if(state is AuthSignOutErrorState){
+          } else if (state is AuthSignOutErrorState) {
             Navigator.pop(context);
             Dialogs.showErrorSnackBar(context);
-          }else if(state is AuthSignOutSuccessState){
+          } else if (state is AuthSignOutSuccessState) {
             Navigator.pop(context);
             Navigator.pushReplacementNamed(context, AppRoutes.loginScreenRoute);
           }
         },
         child: Padding(
           padding: const EdgeInsets.only(bottom: 8, right: 8),
-          child: Builder(
-            builder: (context) {
-              return FloatingActionButton.extended(
-                onPressed: () {
-                  context.read<AuthCubit>().signOut();
-                },
-                label: const Text("Logout"),
-                icon: const Icon(Icons.logout),
-                backgroundColor: Colors.red,
-              );
-            }
-          ),
+          child: Builder(builder: (context) {
+            return FloatingActionButton.extended(
+              onPressed: () {
+                context.read<AuthCubit>().signOut();
+              },
+              label: const Text("Logout"),
+              icon: const Icon(Icons.logout),
+              backgroundColor: Colors.red,
+            );
+          }),
         ),
       ),
     );
