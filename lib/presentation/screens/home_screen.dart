@@ -54,9 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: StreamBuilder(
           stream: context
               .read<ChatsCubit>()
-              .firestore
-              .collection("users")
-              .snapshots(),
+              .usersStream(),
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.waiting:
