@@ -40,13 +40,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         body: BlocConsumer<AuthCubit, AuthState>(
           listener: (context, state) {
-           if(state is AuthProfileUpdateInfoLoadingState){
-             Dialogs.showLoadingDialog(context);
-           }else if(state is AuthProfileUpdateInfoSuccessState){
-             Navigator.pop(context);
-             Dialogs.showSuccessSnackBar(context, "Profile Updated Successfully !!");
-             context.read<AuthCubit>().getTheCurrentUser();
-           }
+            if (state is AuthProfileUpdateInfoLoadingState) {
+              Dialogs.showLoadingDialog(context);
+            } else if (state is AuthProfileUpdateInfoSuccessState) {
+              Navigator.pop(context);
+              Dialogs.showSuccessSnackBar(
+                  context, "Profile Updated Successfully !!");
+              context.read<AuthCubit>().getTheCurrentUser();
+            }
           },
           listenWhen: (oldState, newState) => newState is AuthProfileInfoState,
           builder: (context, state) {
@@ -62,7 +63,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 );
               case AuthProfileInfoSuccessState:
-              case AuthProfileUpdateInfoSuccessState :
+              case AuthProfileUpdateInfoSuccessState:
                 return Form(
                   key: formKey,
                   child: Padding(
@@ -102,7 +103,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   color: Colors.white,
                                   shape: const CircleBorder(),
                                   elevation: 2,
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    _showPickImageModalBottomSheet();
+                                  },
                                   child: const Icon(
                                     Icons.camera_alt_outlined,
                                     color: Colors.blueAccent,
@@ -175,7 +178,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             onPressed: () {
                               if (formKey.currentState!.validate()) {
                                 formKey.currentState!.save();
-                                context.read<AuthCubit>().updateUserInfo(name, about);
+                                context
+                                    .read<AuthCubit>()
+                                    .updateUserInfo(name, about);
                               }
                             },
                             style: ElevatedButton.styleFrom(
@@ -230,5 +235,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
+  }
+
+  void _showPickImageModalBottomSheet() {
+    showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(10),
+            topRight: Radius.circular(10),
+          ),
+        ),
+        backgroundColor: Colors.white,
+        builder: (context) {
+          return ListView(
+            shrinkWrap: true,
+            padding: EdgeInsets.symmetric(
+                vertical: mediaQuery(context).height * 0.05),
+            children: [
+              const Text(
+                "Pick Profile Picture",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 30,),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        shape: const CircleBorder(),
+                        backgroundColor: Colors.white,
+                        fixedSize: Size(
+                          mediaQuery(context).width * 0.3,
+                          mediaQuery(context).height * 0.15,
+                        )),
+                    onPressed: () {},
+                    child: Image.asset("assets/images/camera.png"),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        shape: const CircleBorder(),
+                        backgroundColor: Colors.white,
+                        fixedSize: Size(
+                          mediaQuery(context).width * 0.3,
+                          mediaQuery(context).height * 0.15,
+                        )),
+                    onPressed: () {},
+                    child: Image.asset("assets/images/gallery.png"),
+                  )
+
+                ],
+              ),
+            ],
+          );
+        });
   }
 }
