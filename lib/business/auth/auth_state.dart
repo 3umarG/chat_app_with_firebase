@@ -35,3 +35,5 @@ class AuthProfileInfoErrorState extends AuthProfileInfoState{}
 class AuthProfileUpdateInfoLoadingState extends AuthProfileInfoState{}
 class AuthProfileUpdateInfoSuccessState extends AuthProfileInfoState{}
 class AuthProfileUpdateInfoErrorState extends AuthProfileInfoState{}
+
+class AuthPickImageState extends AuthProfileInfoState {}

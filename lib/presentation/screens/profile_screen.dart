@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/business/auth/auth_cubit.dart';
 import 'package:chat_app/core/constants/routes.dart';
@@ -5,6 +7,7 @@ import 'package:chat_app/data/api/api_services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/helper/dialogs.dart';
 import '../../core/media_query.dart';
@@ -47,6 +50,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Dialogs.showSuccessSnackBar(
                   context, "Profile Updated Successfully !!");
               context.read<AuthCubit>().getTheCurrentUser();
+            }else if(state is AuthPickImageState){
+              Navigator.pop(context);
             }
           },
           listenWhen: (oldState, newState) => newState is AuthProfileInfoState,
@@ -64,6 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
               case AuthProfileInfoSuccessState:
               case AuthProfileUpdateInfoSuccessState:
+              case AuthPickImageState :
                 return Form(
                   key: formKey,
                   child: Padding(
@@ -79,23 +85,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Stack(
                             alignment: Alignment.bottomRight,
                             children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                    mediaQuery(context).height * 0.1),
-                                child: CachedNetworkImage(
-                                  fit: BoxFit.fill,
-                                  width: mediaQuery(context).height * 0.2,
-                                  height: mediaQuery(context).height * 0.2,
-                                  imageUrl: ApiServices.user.photoURL!,
-                                  placeholder: (_, s) => const CircleAvatar(
-                                    child: Icon(CupertinoIcons.person_2_alt),
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      const CircleAvatar(
-                                    child: Icon(CupertinoIcons.person_2_alt),
-                                  ),
-                                ),
-                              ),
+                              context.read<AuthCubit>().image == null
+
+                                  /// Get the image from the firebase
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                          mediaQuery(context).height * 0.1),
+                                      child: CachedNetworkImage(
+                                        fit: BoxFit.fill,
+                                        width: mediaQuery(context).height * 0.2,
+                                        height:
+                                            mediaQuery(context).height * 0.2,
+                                        imageUrl: ApiServices.user.photoURL!,
+                                        placeholder: (_, s) =>
+                                            const CircleAvatar(
+                                          child:
+                                              Icon(CupertinoIcons.person_2_alt),
+                                        ),
+                                        errorWidget: (context, url, error) =>
+                                            const CircleAvatar(
+                                          child:
+                                              Icon(CupertinoIcons.person_2_alt),
+                                        ),
+                                      ),
+                                    )
+
+                                  /// Selected Image from gallery or camera
+                                  : ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                          mediaQuery(context).height * 0.1),
+                                      child: Image.file(
+                                        File(context.read<AuthCubit>().image!),
+                                        fit: BoxFit.fill,
+                                        width: mediaQuery(context).height * 0.2,
+                                        height:
+                                            mediaQuery(context).height * 0.2,
+                                      ),
+                                    ),
                               Positioned(
                                 bottom: -1,
                                 right: -20,
@@ -104,7 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   shape: const CircleBorder(),
                                   elevation: 2,
                                   onPressed: () {
-                                    _showPickImageModalBottomSheet();
+                                    _showPickImageModalBottomSheet(context);
                                   },
                                   child: const Icon(
                                     Icons.camera_alt_outlined,
@@ -237,7 +263,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showPickImageModalBottomSheet() {
+  void _showPickImageModalBottomSheet(BuildContext receivedContext) {
     showModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(
@@ -249,46 +275,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: Colors.white,
         builder: (context) {
           return ListView(
-            shrinkWrap: true,
-            padding: EdgeInsets.symmetric(
-                vertical: mediaQuery(context).height * 0.05),
-            children: [
-              const Text(
-                "Pick Profile Picture",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 30,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        shape: const CircleBorder(),
-                        backgroundColor: Colors.white,
-                        fixedSize: Size(
-                          mediaQuery(context).width * 0.3,
-                          mediaQuery(context).height * 0.15,
-                        )),
-                    onPressed: () {},
-                    child: Image.asset("assets/images/camera.png"),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        shape: const CircleBorder(),
-                        backgroundColor: Colors.white,
-                        fixedSize: Size(
-                          mediaQuery(context).width * 0.3,
-                          mediaQuery(context).height * 0.15,
-                        )),
-                    onPressed: () {},
-                    child: Image.asset("assets/images/gallery.png"),
-                  )
-
-                ],
-              ),
-            ],
-          );
+              shrinkWrap: true,
+              padding: EdgeInsets.symmetric(
+                  vertical: mediaQuery(context).height * 0.05),
+              children: [
+                const Text(
+                  "Pick Profile Picture",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(
+                  height: 30,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          shape: const CircleBorder(),
+                          backgroundColor: Colors.white,
+                          fixedSize: Size(
+                            mediaQuery(context).width * 0.3,
+                            mediaQuery(context).height * 0.15,
+                          )),
+                      onPressed: () async {
+                        await BlocProvider.of<AuthCubit>(receivedContext , listen: false).pickImage(ImageSource.camera);
+                      },
+                      child: Image.asset("assets/images/camera.png"),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          shape: const CircleBorder(),
+                          backgroundColor: Colors.white,
+                          fixedSize: Size(
+                            mediaQuery(context).width * 0.3,
+                            mediaQuery(context).height * 0.15,
+                          )),
+                      onPressed: () async {
+                        await BlocProvider.of<AuthCubit>(receivedContext , listen: false).pickImage(ImageSource.gallery);
+                      },
+                      child: Image.asset("assets/images/gallery.png"),
+                    )
+                  ],
+                ),
+              ],
+            );
         });
   }
 }

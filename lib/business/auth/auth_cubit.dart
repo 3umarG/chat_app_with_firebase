@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
 
 import '../../data/models/chat_user.dart';
@@ -129,6 +130,17 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthProfileUpdateInfoSuccessState());
     } catch (e) {
       emit(AuthProfileUpdateInfoErrorState());
+    }
+  }
+
+  String? image;
+
+  Future<void> pickImage(ImageSource source) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: source);
+    if (image != null) {
+      this.image = image.path;
+      emit(AuthPickImageState());
     }
   }
 }
