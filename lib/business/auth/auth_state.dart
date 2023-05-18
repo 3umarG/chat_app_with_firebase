@@ -37,3 +37,10 @@ class AuthProfileUpdateInfoSuccessState extends AuthProfileInfoState{}
 class AuthProfileUpdateInfoErrorState extends AuthProfileInfoState{}
 
 class AuthPickImageState extends AuthProfileInfoState {}
+class AuthUploadImageToStorageLoadingState extends AuthProfileInfoState{}
+class AuthUploadImageToStorageSuccessState extends AuthProfileInfoState{}
+class AuthUploadImageToStorageErrorState extends AuthProfileInfoState{
+  final String message;
+
+  AuthUploadImageToStorageErrorState(this.message);
+}

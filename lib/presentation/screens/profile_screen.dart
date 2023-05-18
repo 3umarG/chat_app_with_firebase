@@ -52,12 +52,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               context.read<AuthCubit>().getTheCurrentUser();
             }else if(state is AuthPickImageState){
               Navigator.pop(context);
+            }else if(state is AuthUploadImageToStorageSuccessState){
+              Dialogs.showSuccessSnackBar(
+                  context, "Your Profile Picture update successfully");
+              context.read<AuthCubit>().getTheCurrentUser();
             }
           },
           listenWhen: (oldState, newState) => newState is AuthProfileInfoState,
           builder: (context, state) {
             switch (state.runtimeType) {
               case AuthProfileInfoLoadingState:
+              case AuthUploadImageToStorageLoadingState :
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
@@ -67,9 +72,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     "Error Occured while fetching your information !!",
                   ),
                 );
+              case AuthUploadImageToStorageErrorState:
+                return const Center(
+                  child: Text(
+                    "Error Occured while upload your image !!",
+                  ),
+                );
               case AuthProfileInfoSuccessState:
               case AuthProfileUpdateInfoSuccessState:
               case AuthPickImageState :
+              case AuthUploadImageToStorageSuccessState :
                 return Form(
                   key: formKey,
                   child: Padding(

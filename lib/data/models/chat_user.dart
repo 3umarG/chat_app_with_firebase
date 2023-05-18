@@ -1,7 +1,7 @@
 class ChatUser {
   final String? id;
   final String? name;
-  final String? image;
+   String? image;
   final String? about;
   final String? createdAt;
   final bool? isOnline;

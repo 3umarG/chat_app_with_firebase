@@ -136,11 +136,33 @@ class AuthCubit extends Cubit<AuthState> {
   String? image;
 
   Future<void> pickImage(ImageSource source) async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: source);
-    if (image != null) {
-      this.image = image.path;
-      emit(AuthPickImageState());
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: source);
+      if (image != null) {
+        this.image = image.path;
+        emit(AuthPickImageState());
+
+        /// TODO : upload the Image to the Firebase Storage
+        File file = File(this.image!);
+        final ref = ApiServices.firebaseStorage.ref().child(
+            "profile_pictures/${currentUser!.id}.${file.path.split(".").last}");
+
+        // upload the file
+        emit(AuthUploadImageToStorageLoadingState());
+        await ref.putFile(file);
+
+        // update the image in database of the user
+        currentUser!.image = await ref.getDownloadURL();
+        ApiServices.firebaseStore.collection("users").doc(currentUser!.id).update(
+          {
+           'image' : currentUser!.image
+          },
+        );
+        emit(AuthUploadImageToStorageSuccessState());
+      }
+    } catch (e) {
+      emit(AuthUploadImageToStorageErrorState(e.toString()));
     }
   }
 }
