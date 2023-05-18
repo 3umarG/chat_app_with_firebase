@@ -79,9 +79,18 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Icon(Icons.chat_outlined),
             ),
           ),
-          body: state is HomeScreenUiDisableSearchState
-              ? _buildStreamUsers()
-              : _buildSearchedUser(),
+          body: WillPopScope(
+              child: state is HomeScreenUiDisableSearchState
+                  ? _buildStreamUsers()
+                  : _buildSearchedUser(),
+              onWillPop: () {
+                if(state is HomeScreenUiEnableSearchState){
+                  context.read<ChatsCubit>().disableSearch();
+                  return Future.value(false);
+                }else {
+                  return Future.value(true);
+                }
+              },),
         );
       },
     );
@@ -169,8 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return _buildListForSearch(searchedUsers);
       }
     } else {
-      final List<ChatUser> listOfUsers =
-          context.read<ChatsCubit>().allUsers;
+      final List<ChatUser> listOfUsers = context.read<ChatsCubit>().allUsers;
       return _buildListForSearch(listOfUsers);
     }
   }
