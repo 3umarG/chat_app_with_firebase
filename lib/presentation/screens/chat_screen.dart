@@ -14,6 +14,11 @@ class ChatScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildChatScreenAppBar(context),
+      body: Column(
+        children: [
+          _buildTypeBar(context),
+        ],
+      ),
     );
   }
 
@@ -67,6 +72,58 @@ class ChatScreen extends StatelessWidget {
               ],
             )
           ],
+        ),
+      );
+
+  _buildTypeBar(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: mediaQuery(context).height * 0.01 , horizontal: mediaQuery(context).width * 0.02),
+      child: Row(
+        children: [
+          Expanded(
+            child: Card(
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Row(
+                children: [
+                  _buildIconForTypeBar(Icons.emoji_emotions),
+                  const Expanded(
+                    child: TextField(
+                      keyboardType: TextInputType.multiline,
+                      maxLines: null,
+                      cursorColor: Colors.blueAccent,
+                      decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: "Type something ...",
+                          hintStyle: TextStyle(
+                            color: Colors.blueAccent,
+                          )),
+                    ),
+                  ),
+                  _buildIconForTypeBar(Icons.image),
+                  _buildIconForTypeBar(Icons.camera_alt),
+                ],
+              ),
+            ),
+          ),
+          MaterialButton(
+            color: Colors.green,
+            minWidth: 5,
+            padding: const EdgeInsets.symmetric(horizontal: 10 , vertical: 10),
+            shape: const CircleBorder(),
+            onPressed: () {},
+            child: const Icon(Icons.send_outlined , color: Colors.white,size: 28),
+          ),
+        ],
+      ),
+    );
+  }
+
+  _buildIconForTypeBar(IconData icon) => IconButton(
+        onPressed: () {},
+        icon: Icon(
+          icon,
+          color: Colors.blueAccent,
         ),
       );
 }
