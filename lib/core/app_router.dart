@@ -6,6 +6,8 @@ import 'package:chat_app/presentation/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../data/models/chat_user.dart';
+import '../presentation/screens/chat_screen.dart';
 import '../presentation/screens/splash_screen.dart';
 import 'constants/routes.dart';
 
@@ -14,19 +16,15 @@ class AppRouter {
 
   AppRouter(this.authCubit);
 
-
-
   Route? generateRoute(RouteSettings settings) {
     switch (settings.name) {
-
       case AppRoutes.profileScreenRoute:
         return MaterialPageRoute(
           builder: (_) => BlocProvider.value(
-            value:authCubit,
+            value: authCubit,
             child: const ProfileScreen(),
           ),
         );
-
 
       case AppRoutes.homeScreenRoute:
         return MaterialPageRoute(
@@ -36,18 +34,24 @@ class AppRouter {
           ),
         );
 
-
       case AppRoutes.splashScreenRoute:
         return MaterialPageRoute(
           builder: (_) => const SplashScreen(),
         );
 
-
       case AppRoutes.loginScreenRoute:
         return MaterialPageRoute(
           builder: (_) => BlocProvider.value(
-            value:authCubit,
+            value: authCubit,
             child: const LoginScreen(),
+          ),
+        );
+
+      case AppRoutes.chatScreenRoute:
+        final user = settings.arguments as ChatUser;
+        return MaterialPageRoute(
+          builder: (_) => ChatScreen(
+            user: user,
           ),
         );
       default:

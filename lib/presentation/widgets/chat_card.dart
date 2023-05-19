@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chat_app/core/constants/routes.dart';
 import 'package:chat_app/core/media_query.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,9 @@ class ChatCard extends StatelessWidget {
       margin: EdgeInsets.symmetric(
           horizontal: mediaQuery(context).width * .01, vertical: 4),
       child: ListTile(
+        onTap: (){
+          Navigator.pushNamed(context, AppRoutes.chatScreenRoute ,arguments: user);
+        },
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         title: Text(user.name ?? "Name"),
         subtitle: Text(user.about ?? "About"),
