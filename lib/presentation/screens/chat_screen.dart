@@ -16,6 +16,7 @@ class ChatScreen extends StatelessWidget {
       appBar: _buildChatScreenAppBar(context),
       body: Column(
         children: [
+          Expanded(child: _buildStreamChats()),
           _buildTypeBar(context),
         ],
       ),
@@ -126,4 +127,50 @@ class ChatScreen extends StatelessWidget {
           color: Colors.blueAccent,
         ),
       );
+
+
+  _buildStreamChats() => StreamBuilder(
+      // stream: context.read<ChatsCubit>().usersStream(),
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+          case ConnectionState.none:
+            // TODO : uncomment this when add the stream
+            // return const Center(
+            //   child: CircularProgressIndicator(),
+            // );
+          case ConnectionState.active:
+          case ConnectionState.done:
+            final List<ChatUser> listOfChats = [];
+            return listOfChats.isNotEmpty
+                ? ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemBuilder: (context, index) => const Text("Hello"),
+              itemCount: listOfChats.length,
+              physics: const BouncingScrollPhysics(),
+            )
+                : Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    "assets/images/empty.png",
+                    width: mediaQuery(context).width * .35,
+                    height: mediaQuery(context).height * .35,
+                  ),
+                  const Text(
+                    "Say Hi  👋",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueAccent,
+                    ),
+                  )
+                ],
+              ),
+            );
+        }
+      });
 }
