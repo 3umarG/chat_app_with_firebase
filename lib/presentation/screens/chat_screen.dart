@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:chat_app/data/api/api_services.dart';
 import 'package:chat_app/data/models/chat_user.dart';
 import 'package:chat_app/data/models/message_model.dart';
 import 'package:chat_app/presentation/widgets/message_card.dart';
@@ -19,6 +18,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  final _textController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,12 +104,13 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Row(
                 children: [
                   _buildIconForTypeBar(Icons.emoji_emotions),
-                  const Expanded(
+                   Expanded(
                     child: TextField(
+                      controller: _textController,
                       keyboardType: TextInputType.multiline,
                       maxLines: null,
                       cursorColor: Colors.blueAccent,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                           border: InputBorder.none,
                           hintText: "Type something ...",
                           hintStyle: TextStyle(
@@ -128,7 +129,13 @@ class _ChatScreenState extends State<ChatScreen> {
             minWidth: 5,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             shape: const CircleBorder(),
-            onPressed: () {},
+            onPressed: () {
+              if(_textController.text.trim().isNotEmpty){
+                context.read<ChatsCubit>().sendMessage(widget.user, _textController.text);
+                _textController.clear();
+                _textController.text = "";
+              }
+            },
             child:
                 const Icon(Icons.send_outlined, color: Colors.white, size: 28),
           ),
@@ -146,7 +153,7 @@ class _ChatScreenState extends State<ChatScreen> {
       );
 
   _buildStreamChats() => StreamBuilder(
-      stream: context.read<ChatsCubit>().messagesStream(),
+      stream: context.read<ChatsCubit>().messagesStream(widget.user),
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.waiting:
@@ -156,28 +163,10 @@ class _ChatScreenState extends State<ChatScreen> {
             );
           case ConnectionState.active:
           case ConnectionState.done:
-            // TODO: remove this when accept the actual messages
-            // final List<Message> listOfChats = context
-            //     .read<ChatsCubit>()
-            //     .getMessagesListFromSnapshot(snapshot);
-            final listOfChats = [
-              Message(
-                fromId: ApiServices.user.uid,
-                toId: "55",
-                sentTime: "5:00 AM",
-                readTime: "12:00 PM",
-                message: "I am send this message",
-                type: MessageType.text,
-              ),
-              Message(
-                fromId: "88",
-                toId: ApiServices.user.uid,
-                sentTime: "5:22 AM",
-                readTime: "12:00 PM",
-                message: "I am receiv this message",
-                type: MessageType.text,
-              ),
-            ];
+
+            final List<Message> listOfChats = context
+                .read<ChatsCubit>()
+                .getMessagesListFromSnapshot(snapshot);
             return listOfChats.isNotEmpty
                 ? ListView.builder(
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -187,25 +176,27 @@ class _ChatScreenState extends State<ChatScreen> {
                     physics: const BouncingScrollPhysics(),
                   )
                 : Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          "assets/images/empty.png",
-                          width: mediaQuery(context).width * .35,
-                          height: mediaQuery(context).height * .35,
-                        ),
-                        const Text(
-                          "Say Hi  👋",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blueAccent,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            "assets/images/empty.png",
+                            width: mediaQuery(context).width * .35,
+                            height: mediaQuery(context).height * .35,
                           ),
-                        )
-                      ],
+                          const Text(
+                            "Say Hi  👋",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blueAccent,
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                   );
         }

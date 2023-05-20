@@ -12,12 +12,10 @@ part 'chats_state.dart';
 class ChatsCubit extends Cubit<ChatsState> {
   ChatsCubit() : super(ChatsInitial());
 
-
   /// *************** General Usage ******************
   final FirebaseFirestore firestore = ApiServices.firebaseStore;
   final currentUser = ApiServices.user;
-  
-  
+
   /// *************** For Users Chats *******************
   List<ChatUser> allUsers = [];
   List<ChatUser> searchedList = [];
@@ -52,13 +50,21 @@ class ChatsCubit extends Cubit<ChatsState> {
         snapshot.data!.docs.map((e) => ChatUser.fromJson(e.data())));
     return allUsers;
   }
-  
-  
+
   /// ******************** For Messages *********************
 
   List<Message> allMessages = [];
-  Stream<QuerySnapshot<Map<String , dynamic>>> messagesStream() {
-    return firestore.collection("messages").snapshots();
+
+  /// ****************** Get all messages stream between me and another user
+  /// Chats (collection) ===>
+  ///        conversations between two users : conversation_id (doc) ===>
+  ///              messages (collection) ===>
+  ///                   message (doc) with time as a unique id .
+  Stream<QuerySnapshot<Map<String, dynamic>>> messagesStream(
+      ChatUser connectedUser) {
+    return firestore
+        .collection("chats/${_getConversationId(connectedUser.id!)}/messages/")
+        .snapshots();
   }
 
   List<Message> getMessagesListFromSnapshot(
@@ -67,5 +73,31 @@ class ChatsCubit extends Cubit<ChatsState> {
         snapshot.data!.docs.map((e) => Message.fromJson(e.data())));
     return allMessages;
   }
-  
+
+  String _getConversationId(String id) =>
+      currentUser.uid.hashCode <= id.hashCode
+          ? "${currentUser.uid}_$id"
+          : "${id}_${currentUser.uid}";
+
+  /// Send Message Function
+  Future<void> sendMessage(ChatUser connectedUser, String message) async {
+    emit(MessageLoadingSendState());
+    try {
+      final timeForSend = DateTime.now().millisecondsSinceEpoch.toString();
+      final Message sendMessageObject = Message(
+        fromId: currentUser.uid,
+        toId: connectedUser.id!,
+        sentTime: timeForSend,
+        readTime: '',
+        message: message,
+        type: MessageType.text,
+      );
+      final ref = firestore
+          .collection("chats/${_getConversationId(connectedUser.id!)}/messages/")
+          .doc(timeForSend);
+      await ref.set(sendMessageObject.toJson());
+    } catch (e) {
+      emit(MessageErrorSendState(e.toString()));
+    }
+  }
 }
