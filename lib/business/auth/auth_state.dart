@@ -5,25 +5,26 @@ abstract class AuthState {}
 
 class AuthInitial extends AuthState {}
 
-class AuthGoogleSignInLoadingState extends AuthState {}
+abstract class AuthGoogleSignInState extends AuthState{}
+class AuthGoogleSignInLoadingState extends AuthGoogleSignInState {}
 
-class AuthGoogleSignInFirebaseErrorState extends AuthState {
+class AuthGoogleSignInFirebaseErrorState extends AuthGoogleSignInState {
   final String message;
 
   AuthGoogleSignInFirebaseErrorState(this.message);
 }
 
-class AuthGoogleSignInNoInternetState extends AuthState{}
-class AuthGoogleSignInSuccessState extends AuthState {
+class AuthGoogleSignInNoInternetState extends AuthGoogleSignInState{}
+class AuthGoogleSignInSuccessState extends AuthGoogleSignInState {
   final User user;
 
   AuthGoogleSignInSuccessState(this.user);
 }
 
-
-class AuthSignOutLoadingState extends AuthState{}
-class AuthSignOutErrorState extends AuthState{}
-class AuthSignOutSuccessState extends AuthState{}
+abstract class AuthSignOutState extends AuthState{}
+class AuthSignOutLoadingState extends AuthSignOutState{}
+class AuthSignOutErrorState extends AuthSignOutState{}
+class AuthSignOutSuccessState extends AuthSignOutState{}
 
 
 abstract class AuthProfileInfoState extends AuthState{}

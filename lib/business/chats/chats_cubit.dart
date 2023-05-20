@@ -14,7 +14,6 @@ class ChatsCubit extends Cubit<ChatsState> {
 
   /// *************** General Usage ******************
   final FirebaseFirestore firestore = ApiServices.firebaseStore;
-  final currentUser = ApiServices.user;
 
   /// *************** For Users Chats *******************
   List<ChatUser> allUsers = [];
@@ -37,17 +36,22 @@ class ChatsCubit extends Cubit<ChatsState> {
     emit(HomeScreenUiTypingSearchState());
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> usersStream() {
-    return firestore
-        .collection("users")
-        .where('id', isNotEqualTo: currentUser.uid)
-        .snapshots();
+  Stream<QuerySnapshot<Map<String, dynamic>>>? usersStream() {
+    if (ApiServices.user != null) {
+      return firestore
+          .collection("users")
+          .where('id', isNotEqualTo: ApiServices.user!.uid)
+          .snapshots();
+    } else {
+      return null;
+    }
   }
 
   List<ChatUser> getUsersFromSnapshot(
-      AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
-    allUsers = List<ChatUser>.from(
-        snapshot.data!.docs.map((e) => ChatUser.fromJson(e.data())));
+      AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>? snapshot) {
+    allUsers = List<ChatUser>.from(snapshot != null
+        ? snapshot.data!.docs.map((e) => ChatUser.fromJson(e.data()))
+        : []);
     return allUsers;
   }
 
@@ -75,9 +79,9 @@ class ChatsCubit extends Cubit<ChatsState> {
   }
 
   String _getConversationId(String id) =>
-      currentUser.uid.hashCode <= id.hashCode
-          ? "${currentUser.uid}_$id"
-          : "${id}_${currentUser.uid}";
+      ApiServices.user!.uid.hashCode <= id.hashCode
+          ? "${ApiServices.user!.uid}_$id"
+          : "${id}_${ApiServices.user!.uid}";
 
   /// Send Message Function
   Future<void> sendMessage(ChatUser connectedUser, String message) async {
@@ -85,7 +89,7 @@ class ChatsCubit extends Cubit<ChatsState> {
     try {
       final timeForSend = DateTime.now().millisecondsSinceEpoch.toString();
       final Message sendMessageObject = Message(
-        fromId: currentUser.uid,
+        fromId: ApiServices.user!.uid,
         toId: connectedUser.id!,
         sentTime: timeForSend,
         readTime: '',
@@ -93,11 +97,25 @@ class ChatsCubit extends Cubit<ChatsState> {
         type: MessageType.text,
       );
       final ref = firestore
-          .collection("chats/${_getConversationId(connectedUser.id!)}/messages/")
+          .collection(
+              "chats/${_getConversationId(connectedUser.id!)}/messages/")
           .doc(timeForSend);
       await ref.set(sendMessageObject.toJson());
     } catch (e) {
       emit(MessageErrorSendState(e.toString()));
     }
+  }
+
+  /// Mark a received message as read
+  Future<void> markMessageAsRead(Message message) async {
+    final ref = firestore
+        .collection("chats/${_getConversationId(message.fromId)}/messages/")
+        .doc(message.sentTime);
+
+    await ref.update(
+      {
+        "readTime": DateTime.now().millisecondsSinceEpoch.toString(),
+      },
+    );
   }
 }

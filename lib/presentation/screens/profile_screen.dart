@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:chat_app/business/auth/auth_cubit.dart';
+import 'package:chat_app/business/profile/profile_cubit.dart';
 import 'package:chat_app/core/constants/routes.dart';
 import 'package:chat_app/data/api/api_services.dart';
 import 'package:flutter/cupertino.dart';
@@ -28,7 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () {
-      BlocProvider.of<AuthCubit>(context, listen: false).getTheCurrentUser();
+      BlocProvider.of<ProfileCubit>(context, listen: false).getTheCurrentUser();
     });
   }
 
@@ -41,47 +41,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
           title: const Text("Your Profile"),
           centerTitle: true,
         ),
-        body: BlocConsumer<AuthCubit, AuthState>(
+        body: BlocConsumer<ProfileCubit, ProfileState>(
           listener: (context, state) {
-            if (state is AuthProfileUpdateInfoLoadingState) {
+            if (state is UpdateProfileInfoLoadingState) {
               Dialogs.showLoadingDialog(context);
-            } else if (state is AuthProfileUpdateInfoSuccessState) {
+            } else if (state is UpdateProfileInfoSuccessState) {
               Navigator.pop(context);
               Dialogs.showSuccessSnackBar(
                   context, "Profile Updated Successfully !!");
-              context.read<AuthCubit>().getTheCurrentUser();
-            }else if(state is AuthPickImageState){
+              context.read<ProfileCubit>().getTheCurrentUser();
+            } else if (state is PickImageState) {
               Navigator.pop(context);
-            }else if(state is AuthUploadImageToStorageSuccessState){
+            } else if (state is UpdateProfileInfoSuccessState) {
               Dialogs.showSuccessSnackBar(
                   context, "Your Profile Picture update successfully");
-              context.read<AuthCubit>().getTheCurrentUser();
+              context.read<ProfileCubit>().getTheCurrentUser();
             }
           },
-          listenWhen: (oldState, newState) => newState is AuthProfileInfoState,
           builder: (context, state) {
             switch (state.runtimeType) {
-              case AuthProfileInfoLoadingState:
-              case AuthUploadImageToStorageLoadingState :
+              case ProfileInfoLoadingState:
+              case UpdateProfileInfoLoadingState:
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
-              case AuthProfileInfoErrorState:
+              case ProfileInfoErrorState:
                 return const Center(
                   child: Text(
                     "Error Occured while fetching your information !!",
                   ),
                 );
-              case AuthUploadImageToStorageErrorState:
+              case LoadImageToFirebaseStoreErrorState:
                 return const Center(
                   child: Text(
                     "Error Occured while upload your image !!",
                   ),
                 );
-              case AuthProfileInfoSuccessState:
-              case AuthProfileUpdateInfoSuccessState:
-              case AuthPickImageState :
-              case AuthUploadImageToStorageSuccessState :
+              case ProfileInfoSuccessState:
+              case UpdateProfileInfoSuccessState:
+              case PickImageState:
+              case LoadImageToFirebaseStoreSuccessState:
                 return Form(
                   key: formKey,
                   child: Padding(
@@ -97,7 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Stack(
                             alignment: Alignment.bottomRight,
                             children: [
-                              context.read<AuthCubit>().image == null
+                              context.read<ProfileCubit>().image == null
 
                                   /// Get the image from the firebase
                                   ? ClipRRect(
@@ -108,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         width: mediaQuery(context).height * 0.2,
                                         height:
                                             mediaQuery(context).height * 0.2,
-                                        imageUrl: ApiServices.user.photoURL!,
+                                        imageUrl: ApiServices.user!.photoURL!,
                                         placeholder: (_, s) =>
                                             const CircleAvatar(
                                           child:
@@ -127,7 +126,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       borderRadius: BorderRadius.circular(
                                           mediaQuery(context).height * 0.1),
                                       child: Image.file(
-                                        File(context.read<AuthCubit>().image!),
+                                        File(context
+                                            .read<ProfileCubit>()
+                                            .image!),
                                         fit: BoxFit.fill,
                                         width: mediaQuery(context).height * 0.2,
                                         height:
@@ -158,7 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           SizedBox(
                             width: double.infinity,
                             child: Text(
-                              ApiServices.user.email!,
+                              ApiServices.user!.email!,
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                 color: Colors.blueGrey,
@@ -172,7 +173,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           TextFormField(
                             initialValue:
-                                context.read<AuthCubit>().currentUser!.name,
+                                context.read<ProfileCubit>().currentUser!.name,
                             onSaved: (value) => name = value!,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -200,7 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               return null;
                             },
                             initialValue:
-                                context.read<AuthCubit>().currentUser!.about,
+                                context.read<ProfileCubit>().currentUser!.about,
                             decoration: InputDecoration(
                                 prefixIcon: const Icon(Icons.info_outline),
                                 prefixIconColor: Colors.blueAccent,
@@ -217,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               if (formKey.currentState!.validate()) {
                                 formKey.currentState!.save();
                                 context
-                                    .read<AuthCubit>()
+                                    .read<ProfileCubit>()
                                     .updateUserInfo(name, about);
                               }
                             },
@@ -244,25 +245,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
             }
           },
         ),
-        floatingActionButton: BlocListener<AuthCubit, AuthState>(
+        floatingActionButton: BlocListener<ProfileCubit, ProfileState>(
           listener: (context, state) {
-            if (state is AuthSignOutLoadingState) {
+            if (state is SignOutLoadingState) {
               Dialogs.showLoadingDialog(context);
-            } else if (state is AuthSignOutErrorState) {
+            } else if (state is SignOutErrorState) {
               Navigator.pop(context);
               Dialogs.showErrorSnackBar(context);
-            } else if (state is AuthSignOutSuccessState) {
-              Navigator.pop(context);
-              Navigator.pushReplacementNamed(
-                  context, AppRoutes.loginScreenRoute);
+            } else if (state is SignOutSuccessState) {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                AppRoutes.loginScreenRoute,
+                (Route<dynamic> route) => false,
+              );
             }
           },
           child: Padding(
             padding: const EdgeInsets.only(bottom: 8, right: 8),
             child: Builder(builder: (context) {
               return FloatingActionButton.extended(
-                onPressed: () {
-                  context.read<AuthCubit>().signOut();
+                onPressed: () async {
+                  await context.read<ProfileCubit>().signOut(context);
                 },
                 label: const Text("Logout"),
                 icon: const Icon(Icons.logout),
@@ -287,51 +289,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: Colors.white,
         builder: (context) {
           return ListView(
-              shrinkWrap: true,
-              padding: EdgeInsets.symmetric(
-                  vertical: mediaQuery(context).height * 0.05),
-              children: [
-                const Text(
-                  "Pick Profile Picture",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(
-                  height: 30,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          shape: const CircleBorder(),
-                          backgroundColor: Colors.white,
-                          fixedSize: Size(
-                            mediaQuery(context).width * 0.3,
-                            mediaQuery(context).height * 0.15,
-                          )),
-                      onPressed: () async {
-                        await BlocProvider.of<AuthCubit>(receivedContext , listen: false).pickImage(ImageSource.camera);
-                      },
-                      child: Image.asset("assets/images/camera.png"),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          shape: const CircleBorder(),
-                          backgroundColor: Colors.white,
-                          fixedSize: Size(
-                            mediaQuery(context).width * 0.3,
-                            mediaQuery(context).height * 0.15,
-                          )),
-                      onPressed: () async {
-                        await BlocProvider.of<AuthCubit>(receivedContext , listen: false).pickImage(ImageSource.gallery);
-                      },
-                      child: Image.asset("assets/images/gallery.png"),
-                    )
-                  ],
-                ),
-              ],
-            );
+            shrinkWrap: true,
+            padding: EdgeInsets.symmetric(
+                vertical: mediaQuery(context).height * 0.05),
+            children: [
+              const Text(
+                "Pick Profile Picture",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(
+                height: 30,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        shape: const CircleBorder(),
+                        backgroundColor: Colors.white,
+                        fixedSize: Size(
+                          mediaQuery(context).width * 0.3,
+                          mediaQuery(context).height * 0.15,
+                        )),
+                    onPressed: () async {
+                      await BlocProvider.of<ProfileCubit>(receivedContext,
+                              listen: false)
+                          .pickImage(ImageSource.camera);
+                    },
+                    child: Image.asset("assets/images/camera.png"),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        shape: const CircleBorder(),
+                        backgroundColor: Colors.white,
+                        fixedSize: Size(
+                          mediaQuery(context).width * 0.3,
+                          mediaQuery(context).height * 0.15,
+                        )),
+                    onPressed: () async {
+                      await BlocProvider.of<ProfileCubit>(receivedContext,
+                              listen: false)
+                          .pickImage(ImageSource.gallery);
+                    },
+                    child: Image.asset("assets/images/gallery.png"),
+                  )
+                ],
+              ),
+            ],
+          );
         });
   }
 }

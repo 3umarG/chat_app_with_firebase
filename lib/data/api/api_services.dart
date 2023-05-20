@@ -6,5 +6,5 @@ abstract class ApiServices {
   static FirebaseAuth firebaseAuth = FirebaseAuth.instance;
   static FirebaseFirestore firebaseStore = FirebaseFirestore.instance;
   static FirebaseStorage firebaseStorage = FirebaseStorage.instance;
-  static User user = firebaseAuth.currentUser!;
+  static User? user = firebaseAuth.currentUser;
 }

@@ -6,7 +6,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
 
 import '../../data/models/chat_user.dart';
@@ -18,41 +17,6 @@ class AuthCubit extends Cubit<AuthState> {
 
   late User user;
 
-  ChatUser? currentUser;
-
-  Future<void> getTheCurrentUser() async {
-    try {
-      emit(AuthProfileInfoLoadingState());
-      DocumentSnapshot<Map<String, dynamic>> snapshot = await ApiServices
-          .firebaseStore
-          .collection("users")
-          .doc(ApiServices.user.uid)
-          .get();
-
-      if (snapshot.exists) {
-        Map<String, dynamic> userData = snapshot.data()!;
-        ChatUser currentUser = ChatUser.fromJson(userData);
-        this.currentUser = currentUser;
-        emit(AuthProfileInfoSuccessState());
-      } else {
-        emit(AuthProfileInfoErrorState());
-      }
-    } catch (e) {
-      emit(AuthProfileInfoErrorState());
-    }
-  }
-
-  Future<void> signOut() async {
-    try {
-      emit(AuthSignOutLoadingState());
-      await ApiServices.firebaseAuth.signOut();
-      await GoogleSignIn().signOut();
-      emit(AuthSignOutSuccessState());
-    } catch (e) {
-      debugPrint(e.toString());
-      emit(AuthSignOutErrorState());
-    }
-  }
 
   Future<void> handleGoogleSignIn() async {
     try {
@@ -76,7 +40,7 @@ class AuthCubit extends Cubit<AuthState> {
 
     // Obtain the auth details from the request
     final GoogleSignInAuthentication? googleAuth =
-        await googleUser?.authentication;
+    await googleUser?.authentication;
 
     // Create a new credential
     final credential = GoogleAuthProvider.credential(
@@ -90,9 +54,9 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<bool> _isUserExistsOnFireStore() async {
     return (await ApiServices.firebaseStore
-            .collection('users')
-            .doc(user.uid)
-            .get())
+        .collection('users')
+        .doc(user.uid)
+        .get())
         .exists;
   }
 
@@ -103,9 +67,15 @@ class AuthCubit extends Cubit<AuthState> {
         name: user.displayName,
         image: user.photoURL,
         about: "I'm a New User , Hy !!",
-        createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+        createdAt: DateTime
+            .now()
+            .millisecondsSinceEpoch
+            .toString(),
         isOnline: false,
-        lastActive: DateTime.now().millisecondsSinceEpoch.toString(),
+        lastActive: DateTime
+            .now()
+            .millisecondsSinceEpoch
+            .toString(),
         email: user.email,
         pushToken: '',
       );
@@ -118,51 +88,4 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> updateUserInfo(String name, String about) async {
-    try {
-      emit(AuthProfileUpdateInfoLoadingState());
-      ApiServices.firebaseStore.collection("users").doc(currentUser!.id).update(
-        {
-          'name': name,
-          'about': about,
-        },
-      );
-      emit(AuthProfileUpdateInfoSuccessState());
-    } catch (e) {
-      emit(AuthProfileUpdateInfoErrorState());
-    }
-  }
-
-  String? image;
-
-  Future<void> pickImage(ImageSource source) async {
-    try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(source: source);
-      if (image != null) {
-        this.image = image.path;
-        emit(AuthPickImageState());
-
-        /// TODO : upload the Image to the Firebase Storage
-        File file = File(this.image!);
-        final ref = ApiServices.firebaseStorage.ref().child(
-            "profile_pictures/${currentUser!.id}.${file.path.split(".").last}");
-
-        // upload the file
-        emit(AuthUploadImageToStorageLoadingState());
-        await ref.putFile(file);
-
-        // update the image in database of the user
-        currentUser!.image = await ref.getDownloadURL();
-        ApiServices.firebaseStore.collection("users").doc(currentUser!.id).update(
-          {
-           'image' : currentUser!.image
-          },
-        );
-        emit(AuthUploadImageToStorageSuccessState());
-      }
-    } catch (e) {
-      emit(AuthUploadImageToStorageErrorState(e.toString()));
-    }
-  }
 }

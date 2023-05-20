@@ -1,5 +1,6 @@
 import 'package:chat_app/business/auth/auth_cubit.dart';
 import 'package:chat_app/business/chats/chats_cubit.dart';
+import 'package:chat_app/business/profile/profile_cubit.dart';
 import 'package:chat_app/presentation/screens/auth/login_screen.dart';
 import 'package:chat_app/presentation/screens/home_screen.dart';
 import 'package:chat_app/presentation/screens/profile_screen.dart';
@@ -21,16 +22,19 @@ class AppRouter {
     switch (settings.name) {
       case AppRoutes.profileScreenRoute:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider.value(
-            value: authCubit,
+          builder: (_) => BlocProvider(
+            create:(_) => ProfileCubit(),
             child: const ProfileScreen(),
           ),
         );
 
       case AppRoutes.homeScreenRoute:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider.value(
-            value: chatsCubit,
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: authCubit),
+              BlocProvider.value(value: chatsCubit)
+            ],
             child: const HomeScreen(),
           ),
         );

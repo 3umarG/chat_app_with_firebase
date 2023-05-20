@@ -1,8 +1,10 @@
+import 'package:chat_app/business/chats/chats_cubit.dart';
 import 'package:chat_app/core/helper/date_util.dart';
 import 'package:chat_app/core/media_query.dart';
 import 'package:chat_app/data/api/api_services.dart';
 import 'package:chat_app/data/models/message_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class MessageCard extends StatelessWidget {
   const MessageCard({Key? key, required this.message}) : super(key: key);
@@ -11,7 +13,7 @@ class MessageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return message.fromId == ApiServices.user.uid
+    return message.fromId == ApiServices.user!.uid
         ? _buildSendMessageCard(context)
         : _buildReceivedMessageCard(context);
   }
@@ -68,12 +70,13 @@ class MessageCard extends StatelessWidget {
                       SizedBox(
                         width: mediaQuery(context).width * 0.01,
                       ),
-                      if (message.readTime.isNotEmpty)
-                        const Icon(
-                          Icons.done_all_rounded,
-                          color: Colors.blueAccent,
-                          size: 20,
-                        )
+                      Icon(
+                        Icons.done_all_rounded,
+                        color: message.readTime.isNotEmpty
+                            ? Colors.blueAccent
+                            : Colors.grey,
+                        size: 20,
+                      )
                     ],
                   ),
                 ),
@@ -86,6 +89,11 @@ class MessageCard extends StatelessWidget {
   }
 
   _buildReceivedMessageCard(BuildContext context) {
+    /// here i check on the message is read or not
+    /// if not i mark it as read
+    if(message.readTime.isEmpty){
+    context.read<ChatsCubit>().markMessageAsRead(message);
+    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
@@ -125,7 +133,7 @@ class MessageCard extends StatelessWidget {
                     children: [
                       Text(
                         DateUtil.getFormattedDateFromMillis(
-                            context, message.readTime),
+                            context, message.sentTime),
                         style: const TextStyle(
                           color: Colors.black54,
                           fontSize: 12,
