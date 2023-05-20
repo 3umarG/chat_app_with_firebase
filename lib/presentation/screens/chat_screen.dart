@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chat_app/data/api/api_services.dart';
 import 'package:chat_app/data/models/chat_user.dart';
 import 'package:chat_app/data/models/message_model.dart';
+import 'package:chat_app/presentation/widgets/message_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,7 +27,7 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8 , vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: _buildStreamChats(),
             ),
           ),
@@ -71,15 +73,15 @@ class _ChatScreenState extends State<ChatScreen> {
                   widget.user.name!,
                   style: const TextStyle(
                     color: Colors.black87,
-                    fontSize: 18,
+                    fontSize: 15,
                   ),
                 ),
                 const Text(
                   "Last Seen not available",
                   style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w300,
+                    color: Colors.black45,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -154,13 +156,33 @@ class _ChatScreenState extends State<ChatScreen> {
             );
           case ConnectionState.active:
           case ConnectionState.done:
-            final List<Message> listOfChats = context
-                .read<ChatsCubit>()
-                .getMessagesListFromSnapshot(snapshot);
+            // TODO: remove this when accept the actual messages
+            // final List<Message> listOfChats = context
+            //     .read<ChatsCubit>()
+            //     .getMessagesListFromSnapshot(snapshot);
+            final listOfChats = [
+              Message(
+                fromId: ApiServices.user.uid,
+                toId: "55",
+                sentTime: "5:00 AM",
+                readTime: "12:00 PM",
+                message: "I am send this message",
+                type: MessageType.text,
+              ),
+              Message(
+                fromId: "88",
+                toId: ApiServices.user.uid,
+                sentTime: "5:22 AM",
+                readTime: "12:00 PM",
+                message: "I am receiv this message",
+                type: MessageType.text,
+              ),
+            ];
             return listOfChats.isNotEmpty
                 ? ListView.builder(
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemBuilder: (context, index) => Text(listOfChats[0].message),
+                    itemBuilder: (context, index) =>
+                        MessageCard(message: listOfChats[index]),
                     itemCount: listOfChats.length,
                     physics: const BouncingScrollPhysics(),
                   )
