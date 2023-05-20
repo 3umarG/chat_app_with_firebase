@@ -1,4 +1,5 @@
 import 'package:chat_app/business/auth/auth_cubit.dart';
+import 'package:chat_app/business/chats/chats_cubit.dart';
 import 'package:chat_app/core/app_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
 
     AuthCubit authCubit = AuthCubit();
+    ChatsCubit chatsCubit = ChatsCubit();
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -43,7 +45,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      onGenerateRoute: AppRouter(authCubit).generateRoute,
+      onGenerateRoute: AppRouter(authCubit , chatsCubit).generateRoute,
     );
   }
 }

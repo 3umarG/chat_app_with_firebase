@@ -5,6 +5,7 @@ import 'package:meta/meta.dart';
 
 import '../../data/api/api_services.dart';
 import '../../data/models/chat_user.dart';
+import '../../data/models/message_model.dart';
 
 part 'chats_state.dart';
 
@@ -12,8 +13,12 @@ class ChatsCubit extends Cubit<ChatsState> {
   ChatsCubit() : super(ChatsInitial());
 
 
+  /// *************** General Usage ******************
   final FirebaseFirestore firestore = ApiServices.firebaseStore;
   final currentUser = ApiServices.user;
+  
+  
+  /// *************** For Users Chats *******************
   List<ChatUser> allUsers = [];
   List<ChatUser> searchedList = [];
 
@@ -47,4 +52,20 @@ class ChatsCubit extends Cubit<ChatsState> {
         snapshot.data!.docs.map((e) => ChatUser.fromJson(e.data())));
     return allUsers;
   }
+  
+  
+  /// ******************** For Messages *********************
+
+  List<Message> allMessages = [];
+  Stream<QuerySnapshot<Map<String , dynamic>>> messagesStream() {
+    return firestore.collection("messages").snapshots();
+  }
+
+  List<Message> getMessagesListFromSnapshot(
+      AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+    allMessages = List<Message>.from(
+        snapshot.data!.docs.map((e) => Message.fromJson(e.data())));
+    return allMessages;
+  }
+  
 }

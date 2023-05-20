@@ -13,8 +13,9 @@ import 'constants/routes.dart';
 
 class AppRouter {
   final AuthCubit authCubit;
+  final ChatsCubit chatsCubit;
 
-  AppRouter(this.authCubit);
+  AppRouter(this.authCubit, this.chatsCubit);
 
   Route? generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -28,8 +29,8 @@ class AppRouter {
 
       case AppRoutes.homeScreenRoute:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider(
-            create: (_) => ChatsCubit(),
+          builder: (_) => BlocProvider.value(
+            value: chatsCubit,
             child: const HomeScreen(),
           ),
         );
@@ -50,8 +51,11 @@ class AppRouter {
       case AppRoutes.chatScreenRoute:
         final user = settings.arguments as ChatUser;
         return MaterialPageRoute(
-          builder: (_) => ChatScreen(
-            user: user,
+          builder: (_) => BlocProvider.value(
+            value: chatsCubit,
+            child: ChatScreen(
+              user: user,
+            ),
           ),
         );
       default:
