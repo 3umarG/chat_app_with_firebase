@@ -1,3 +1,4 @@
+import 'package:chat_app/core/helper/date_util.dart';
 import 'package:chat_app/core/media_query.dart';
 import 'package:chat_app/data/api/api_services.dart';
 import 'package:chat_app/data/models/message_model.dart';
@@ -54,14 +55,25 @@ class MessageCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        message.sentTime,
+                        DateUtil.getFormattedDateFromMillis(
+                            context,
+                            message.readTime.isNotEmpty
+                                ? message.readTime
+                                : message.sentTime),
                         style: const TextStyle(
                           color: Colors.black54,
                           fontSize: 12,
                         ),
                       ),
-                      SizedBox(width: mediaQuery(context).width * 0.01,),
-                      const Icon(Icons.done_all_rounded,color: Colors.blueAccent,size:20 ,)
+                      SizedBox(
+                        width: mediaQuery(context).width * 0.01,
+                      ),
+                      if (message.readTime.isNotEmpty)
+                        const Icon(
+                          Icons.done_all_rounded,
+                          color: Colors.blueAccent,
+                          size: 20,
+                        )
                     ],
                   ),
                 ),
@@ -112,7 +124,8 @@ class MessageCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Text(
-                        message.readTime,
+                        DateUtil.getFormattedDateFromMillis(
+                            context, message.readTime),
                         style: const TextStyle(
                           color: Colors.black54,
                           fontSize: 12,
